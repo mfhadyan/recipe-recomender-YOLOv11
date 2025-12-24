@@ -1,8 +1,27 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# AI Recipe Recommender
+
+An AI-powered recipe recommendation system that detects ingredients from images using YOLO and generates recipe suggestions using Google's Gemini API.
+
+## Features
+
+- 📸 **Image-based ingredient detection** using YOLOv11
+- 🤖 **AI-powered recipe generation** using Gemini API
+- 🎯 **Smart ingredient matching** and coverage scoring
+- 💻 **Modern Next.js frontend** with Tailwind CSS
+- 🚀 **FastAPI backend** with async support
+
+## Prerequisites
+
+Before you begin, ensure you have the following installed:
+
+- **Node.js** 18+ and npm (or yarn/pnpm)
+- **Python** 3.9 or higher
+- **Gemini API key** ([Get one here](https://ai.google.dev/))
+- **YOLOv11 model file** (`yolo11s.pt`) - should be in the project root or backend directory
 
 ## Getting Started
 
-First, run the development server:
+### Step 1: Clone the Repository
 
 ```bash
 git clone <repository-url>
