@@ -79,17 +79,12 @@ cd my-app
 
    # Optional: CORS configuration (defaults to * for development)
    # For development, you can leave this as * or use: http://localhost:3000
-   ```
-
-# For production, specify exact origins: https://yourdomain.com,https://www.yourdomain.com
-
-ALLOWED_ORIGINS=\*
+   # For production, specify exact origins: https://yourdomain.com,https://www.yourdomain.com
+   ALLOWED_ORIGINS=*
 
    # Optional: Model file path (defaults to my_model.pt in current directory)
-
    # MODEL_PATH=my_model.pt
-
-````
+   ```
 
 6. **Verify the model file:**
 
@@ -98,7 +93,7 @@ ALLOWED_ORIGINS=\*
 7. **Start the backend server:**
    ```bash
    uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
-````
+   ```
 
 The API will be available at `http://localhost:8000`
 
