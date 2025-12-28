@@ -61,6 +61,11 @@ export default function Home() {
 
     setLoading(true);
     try {
+      // Log the API URL for debugging (only in development)
+      if (process.env.NODE_ENV === "development") {
+        console.log("API Base URL:", API_BASE_URL);
+      }
+
       const res = await fetch(`${API_BASE_URL}/recommend`, {
         method: "POST",
         body: formData,
@@ -96,7 +101,20 @@ export default function Home() {
       }
     } catch (err) {
       console.error("Error fetching recipes:", err);
-      setError(err.message || "Failed to fetch recipes. Please try again.");
+      
+      // Provide more helpful error messages
+      let errorMessage = err.message || "Failed to fetch recipes. Please try again.";
+      
+      // Check if it's a network error (likely CORS or wrong URL)
+      if (err.message?.includes("Failed to fetch") || err.message?.includes("NetworkError") || err.name === "TypeError") {
+        if (API_BASE_URL === "http://localhost:8000") {
+          errorMessage = "Backend API URL not configured. Please set NEXT_PUBLIC_API_BASE_URL environment variable in Vercel with your backend URL.";
+        } else {
+          errorMessage = `Cannot connect to backend API at ${API_BASE_URL}. Please check: 1) Backend is running, 2) CORS is configured correctly, 3) API URL is correct.`;
+        }
+      }
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
