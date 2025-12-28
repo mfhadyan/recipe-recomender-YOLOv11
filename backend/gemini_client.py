@@ -12,6 +12,10 @@ logger = logging.getLogger(__name__)
 _last_api_call_time = 0.0
 _min_time_between_calls = 1.0  # Minimum 1 second between API calls
 
+# Recipe cache to reduce API calls for same ingredient combinations
+_recipe_cache: Dict[str, tuple] = {}  # key: sorted ingredient string, value: (recipes, timestamp)
+_cache_ttl = 3600  # Cache for 1 hour
+
 GEMINI_API_KEY_ENV = "GEMINI_API_KEY"
 # Using gemini-2.5-flash as per official docs: https://ai.google.dev/gemini-api/docs/quickstart
 GEMINI_API_URL = (
@@ -144,6 +148,22 @@ class GeminiClient:
         """
         if not ingredients:
             return []
+        
+        # Check cache first to avoid API calls
+        cache_key_parts = sorted([ing.lower().strip() for ing in ingredients])
+        if dietary_preferences:
+            cache_key_parts.extend(sorted([dp.lower().strip() for dp in dietary_preferences]))
+        cache_key = ",".join(cache_key_parts)
+        
+        current_time = time.time()
+        if cache_key in _recipe_cache:
+            cached_recipes, cache_time = _recipe_cache[cache_key]
+            if current_time - cache_time < _cache_ttl:
+                logger.info(f"Returning cached recipes for {len(ingredients)} ingredients")
+                return cached_recipes
+            else:
+                # Cache expired, remove it
+                del _recipe_cache[cache_key]
 
         ingredients_str = ", ".join(ingredients)
         dietary_constraint = ""
@@ -279,9 +299,8 @@ Important:
                 coverage_val = hits / total
 
             # Use a more reliable ID generation
-            import hashlib
             id_str = f"{title}{description}"
-            recipe_id = int(hashlib.md5(id_str.encode()).hexdigest()[:8], 16)
+            recipe_id = hash(id_str) & 0x7FFFFFFF  # Use built-in hash with positive mask
 
             normalized.append(
                 {
@@ -302,6 +321,14 @@ Important:
                 }
             )
 
+        # Cache the results
+        _recipe_cache[cache_key] = (normalized, current_time)
+        # Limit cache size to prevent memory issues (keep last 100 entries)
+        if len(_recipe_cache) > 100:
+            # Remove oldest entry
+            oldest_key = min(_recipe_cache.keys(), key=lambda k: _recipe_cache[k][1])
+            del _recipe_cache[oldest_key]
+        
         return normalized
 
 

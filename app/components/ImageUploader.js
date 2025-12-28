@@ -66,13 +66,62 @@ export default function ImageUploader({ file, onFileChange, error, setError }) {
     return true;
   };
 
-  const handleFileChange = (e) => {
+  const compressImage = (file, maxWidth = 1920, maxHeight = 1920, quality = 0.85) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          let width = img.width;
+          let height = img.height;
+
+          // Calculate new dimensions
+          if (width > maxWidth || height > maxHeight) {
+            const ratio = Math.min(maxWidth / width, maxHeight / height);
+            width = width * ratio;
+            height = height * ratio;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, width, height);
+
+          canvas.toBlob(
+            (blob) => {
+              if (blob) {
+                const compressedFile = new File([blob], file.name, {
+                  type: file.type,
+                  lastModified: Date.now(),
+                });
+                resolve(compressedFile);
+              } else {
+                resolve(file); // Fallback to original if compression fails
+              }
+            },
+            file.type,
+            quality
+          );
+        };
+        img.onerror = () => resolve(file); // Fallback to original on error
+        img.src = e.target.result;
+      };
+      reader.onerror = () => resolve(file); // Fallback to original on error
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleFileChange = async (e) => {
     const f = e.target.files?.[0];
     if (f) {
       if (validateFile(f)) {
-        const url = URL.createObjectURL(f);
+        // Compress image before upload to reduce size and API costs
+        const compressedFile = await compressImage(f);
+        const url = URL.createObjectURL(compressedFile);
         setPreviewUrl(url);
-        onFileChange(f);
+        onFileChange(compressedFile);
         if (setError) setError("");
       } else {
         setPreviewUrl(null);

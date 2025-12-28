@@ -1,6 +1,5 @@
-import json
+import logging
 import os
-import time
 from functools import lru_cache
 from typing import List
 
@@ -8,6 +7,8 @@ from PIL import Image
 from ultralytics import YOLO
 
 from .ingredient_normalizer import normalize_ingredients_batch
+
+logger = logging.getLogger(__name__)
 
 
 @lru_cache(maxsize=1)
@@ -38,9 +39,6 @@ def detect_ingredients(img: Image.Image) -> List[str]:
     """
     Run YOLO on the given PIL image and return a list of normalized ingredient names.
     """
-    import logging
-    logger = logging.getLogger(__name__)
-    
     try:
         model = get_model()
         resized = resize_image_for_inference(img)
@@ -58,26 +56,6 @@ def detect_ingredients(img: Image.Image) -> List[str]:
         
         logger.info(f"YOLO detected raw classes: {raw_classes}")
 
-        # #region agent log
-        import time
-        log_path = "/Users/mfahmi/Documents/UAI/semester 5/AI/Tugas Proyek/panic/my-app/.logging/debug.log"
-        try:
-            with open(log_path, "a") as f:
-                f.write(json.dumps({
-                    "sessionId": "debug-session",
-                    "runId": "run1",
-                    "hypothesisId": "B",
-                    "location": "model.py:detect_ingredients",
-                    "message": "YOLO detection complete, starting normalization",
-                    "data": {
-                        "raw_classes": raw_classes,
-                        "raw_count": len(raw_classes),
-                        "timestamp": int(time.time() * 1000)
-                    },
-                    "timestamp": int(time.time() * 1000)
-                }) + "\n")
-        except: pass
-        # #endregion
         # IMPORTANT: Disable AI normalization by default to avoid rate limits
         # AI normalization can be enabled via ENABLE_AI_NORMALIZATION=true env var
         # Dictionary lookup handles most common ingredients without API calls
@@ -86,25 +64,6 @@ def detect_ingredients(img: Image.Image) -> List[str]:
             use_ai_default = os.environ.get("ENABLE_AI_NORMALIZATION", "false").lower() == "true"
             normalized = normalize_ingredients_batch(raw_classes, use_ai=use_ai_default)
             logger.info(f"Final normalized ingredients: {normalized}")
-            # #region agent log
-            try:
-                with open(log_path, "a") as f:
-                    f.write(json.dumps({
-                        "sessionId": "debug-session",
-                        "runId": "post-fix",
-                        "hypothesisId": "B",
-                        "location": "model.py:detect_ingredients",
-                        "message": "Normalization complete",
-                        "data": {
-                            "normalized": normalized,
-                            "normalized_count": len(normalized),
-                            "use_ai": use_ai_default,
-                            "timestamp": int(time.time() * 1000)
-                        },
-                        "timestamp": int(time.time() * 1000)
-                    }) + "\n")
-            except: pass
-            # #endregion
             return normalized
         except Exception as e:
             logger.error(f"Error during ingredient normalization: {e}")

@@ -1,5 +1,4 @@
 import io
-import json
 import os
 import logging
 import re
@@ -30,23 +29,25 @@ if allowed_origins == ["*"]:
         CORSMiddleware,
         allow_origins=["*"],
         allow_credentials=True,
-        allow_methods=["*"],
+        allow_methods=["GET", "POST", "OPTIONS"],
         allow_headers=["*"],
     )
 else:
     # Production mode - specific origins only
+    # Clean up origins (remove empty strings from split)
+    allowed_origins = [origin.strip() for origin in allowed_origins if origin.strip()]
     app.add_middleware(
         CORSMiddleware,
         allow_origins=allowed_origins,
         allow_credentials=True,
-        allow_methods=["GET", "POST"],
+        allow_methods=["GET", "POST", "OPTIONS"],
         allow_headers=["*"],
     )
 
 
 @app.get("/")
 def root() -> dict:
-    return {"message": "Recipe Recommender API", "endpoints": ["/health", "/ingredients/autocomplete", "/recommend"]}
+    return {"message": "Recipe Recommender API", "endpoints": ["/health", "/recommend"]}
 
 
 @app.get("/health")
@@ -54,21 +55,18 @@ def health_check() -> dict:
     return {"status": "ok"}
 
 
-@app.get("/ingredients/autocomplete")
-def ingredient_autocomplete(query: str, limit: int = 5) -> dict:
-    """
-    Simple autocomplete endpoint (no longer uses Gemini API to avoid rate limits).
-    Returns the query itself as a suggestion.
-    This endpoint is deprecated - the frontend no longer uses autocomplete.
-    """
-    q = (query or "").strip()
-    if not q:
-        return {"suggestions": []}
-    
-    # Simple fallback: return the query itself (no API calls)
-    # This endpoint is kept for backward compatibility but shouldn't be called
-    logger.info(f"Autocomplete endpoint called (deprecated): {q}")
-    return {"suggestions": [{"name": q.lower()}]}
+@app.options("/recommend")
+async def recommend_recipes_options():
+    """Handle CORS preflight requests."""
+    return JSONResponse(
+        status_code=200,
+        content={},
+        headers={
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+            "Access-Control-Allow-Headers": "*",
+        },
+    )
 
 
 @app.post("/recommend")
@@ -101,10 +99,20 @@ async def recommend_recipes(
                 detail=f"File is too large ({size_mb:.2f}MB). Maximum size is 10MB."
             )
 
-        # Process image fully in-memory
+        # Process image fully in-memory with optimization
         try:
             img = Image.open(io.BytesIO(contents)).convert("RGB")
-            logger.info(f"Image processed: {img.size}")
+            # Resize large images early to reduce memory usage and processing time
+            # YOLO model works best with 640px max dimension anyway
+            w, h = img.size
+            max_dimension = 1920  # Resize if larger than 1920px to reduce processing overhead
+            if w > max_dimension or h > max_dimension:
+                scale = min(max_dimension / float(w), max_dimension / float(h))
+                new_w, new_h = int(w * scale), int(h * scale)
+                img = img.resize((new_w, new_h), Image.Resampling.LANCZOS)
+                logger.info(f"Image resized from {w}x{h} to {new_w}x{new_h}")
+            else:
+                logger.info(f"Image processed: {img.size}")
         except UnidentifiedImageError as exc:
             raise HTTPException(
                 status_code=400,

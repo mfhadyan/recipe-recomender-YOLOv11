@@ -66,10 +66,16 @@ export default function Home() {
         console.log("API Base URL:", API_BASE_URL);
       }
 
-      const res = await fetch(`${API_BASE_URL}/recommend`, {
+      const apiUrl = `${API_BASE_URL}/recommend`;
+      console.log("Making request to:", apiUrl);
+      
+      const res = await fetch(apiUrl, {
         method: "POST",
         body: formData,
       });
+
+      console.log("Response status:", res.status, res.statusText);
+      console.log("Response headers:", Object.fromEntries(res.headers.entries()));
 
       if (!res.ok) {
         let errorMsg = `HTTP ${res.status}: `;
@@ -77,7 +83,8 @@ export default function Home() {
           const errorData = await res.json();
           errorMsg += errorData?.detail || errorData?.message || res.statusText;
         } catch {
-          errorMsg += res.statusText || "Unknown error";
+          const text = await res.text();
+          errorMsg += text || res.statusText || "Unknown error";
         }
         throw new Error(errorMsg);
       }

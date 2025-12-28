@@ -5,7 +5,6 @@ Falls back to dictionary lookup for performance, then uses AI for unknown ingred
 import json
 import logging
 import os
-import time
 from typing import Dict, List, Optional
 
 from .gemini_client import GeminiClient
@@ -155,28 +154,6 @@ def normalize_ingredients_batch(raw_names: List[str], use_ai: Optional[bool] = N
     if use_ai is None:
         use_ai = os.environ.get("ENABLE_AI_NORMALIZATION", "false").lower() == "true"
     
-    # #region agent log
-    log_path = "/Users/mfahmi/Documents/UAI/semester 5/AI/Tugas Proyek/panic/my-app/.cursor/debug.log"
-    try:
-        with open(log_path, "a") as f:
-            f.write(json.dumps({
-                "sessionId": "debug-session",
-                "runId": "run1",
-                "hypothesisId": "A,C",
-                "location": "ingredient_normalizer.py:normalize_ingredients_batch",
-                "message": "Batch normalization START",
-                "data": {
-                    "raw_count": len(raw_names),
-                    "raw_ingredients": raw_names,
-                    "use_ai": use_ai,
-                    "cache_size": len(_ai_cache),
-                    "timestamp": int(time.time() * 1000)
-                },
-                "timestamp": int(time.time() * 1000)
-            }) + "\n")
-    except: pass
-    # #endregion
-    
     # First pass: dictionary lookup
     normalized_dict: Dict[str, str] = {}
     needs_ai: List[str] = []
@@ -212,91 +189,16 @@ def normalize_ingredients_batch(raw_names: List[str], use_ai: Optional[bool] = N
             else:
                 needs_ai.append(raw)
     
-    # #region agent log
-    try:
-        with open(log_path, "a") as f:
-            f.write(json.dumps({
-                "sessionId": "debug-session",
-                "runId": "run1",
-                "hypothesisId": "A,C",
-                "location": "ingredient_normalizer.py:normalize_ingredients_batch",
-                "message": "Dictionary lookup complete",
-                "data": {
-                    "dict_hits": dict_hits,
-                    "cache_hits": cache_hits,
-                    "needs_ai_count": len(needs_ai),
-                    "needs_ai": needs_ai,
-                    "timestamp": int(time.time() * 1000)
-                },
-                "timestamp": int(time.time() * 1000)
-            }) + "\n")
-    except: pass
-    # #endregion
-    
     # Second pass: AI normalization for unknown ingredients
     if needs_ai and use_ai:
-        # #region agent log
-        try:
-            with open(log_path, "a") as f:
-                f.write(json.dumps({
-                    "sessionId": "debug-session",
-                    "runId": "run1",
-                    "hypothesisId": "A,B",
-                    "location": "ingredient_normalizer.py:normalize_ingredients_batch",
-                    "message": "Calling AI batch normalization",
-                    "data": {
-                        "ingredient_count": len(needs_ai),
-                        "ingredients": needs_ai,
-                        "timestamp": int(time.time() * 1000)
-                    },
-                    "timestamp": int(time.time() * 1000)
-                }) + "\n")
-        except: pass
-        # #endregion
         try:
             ai_normalized = _normalize_batch_with_ai(needs_ai)
-            # #region agent log
-            try:
-                with open(log_path, "a") as f:
-                    f.write(json.dumps({
-                        "sessionId": "debug-session",
-                        "runId": "run1",
-                        "hypothesisId": "A",
-                        "location": "ingredient_normalizer.py:normalize_ingredients_batch",
-                        "message": "AI batch normalization SUCCESS",
-                        "data": {
-                            "normalized_count": len(ai_normalized),
-                            "normalized": ai_normalized,
-                            "timestamp": int(time.time() * 1000)
-                        },
-                        "timestamp": int(time.time() * 1000)
-                    }) + "\n")
-            except: pass
-            # #endregion
             for raw, normalized in zip(needs_ai, ai_normalized):
                 if normalized:
                     normalized_dict[raw] = normalized
                     # Cache the result
                     _ai_cache[raw.lower().strip()] = normalized
         except Exception as e:
-            # #region agent log
-            try:
-                with open(log_path, "a") as f:
-                    f.write(json.dumps({
-                        "sessionId": "debug-session",
-                        "runId": "run1",
-                        "hypothesisId": "A,B,D",
-                        "location": "ingredient_normalizer.py:normalize_ingredients_batch",
-                        "message": "AI batch normalization FAILED",
-                        "data": {
-                            "error": str(e),
-                            "error_type": type(e).__name__,
-                            "timestamp": int(time.time() * 1000)
-                        },
-                        "timestamp": int(time.time() * 1000)
-                    }) + "\n")
-            except: pass
-            # #endregion
             logger.warning(f"Batch AI normalization failed: {e}")
             # Fall through to individual fallback
     
@@ -317,28 +219,6 @@ def normalize_ingredients_batch(raw_names: List[str], use_ai: Optional[bool] = N
         if normalized_lower not in seen:
             seen.add(normalized_lower)
             result.append(normalized)
-    
-    # #region agent log
-    try:
-        with open(log_path, "a") as f:
-            f.write(json.dumps({
-                "sessionId": "debug-session",
-                "runId": "run1",
-                "hypothesisId": "A,C",
-                "location": "ingredient_normalizer.py:normalize_ingredients_batch",
-                "message": "Batch normalization COMPLETE",
-                "data": {
-                    "final_count": len(result),
-                    "final_normalized": result,
-                    "dict_hits": dict_hits,
-                    "cache_hits": cache_hits,
-                    "ai_calls_made": 1 if (needs_ai and use_ai) else 0,
-                    "timestamp": int(time.time() * 1000)
-                },
-                "timestamp": int(time.time() * 1000)
-            }) + "\n")
-    except: pass
-    # #endregion
     
     return result
 
