@@ -4,7 +4,7 @@ An AI-powered recipe recommendation system that detects ingredients from images 
 
 ## Features
 
-- 📸 **Image-based ingredient detection** using YOLOv11
+- 📸 **Image-based ingredient detection** using custom YOLO model
 - 🤖 **AI-powered recipe generation** using Gemini API
 - 🎯 **Smart ingredient matching** and coverage scoring
 - 💻 **Modern Next.js frontend** with Tailwind CSS
@@ -17,7 +17,7 @@ Before you begin, ensure you have the following installed:
 - **Node.js** 18+ and npm (or yarn/pnpm)
 - **Python** 3.9 or higher
 - **Gemini API key** ([Get one here](https://ai.google.dev/))
-- **YOLOv11 model file** (`yolo11s.pt`) - should be in the project root or backend directory
+- **Custom YOLO model file** (`my_model.pt`) - should be in the `backend` directory
 
 ## Getting Started
 
@@ -85,15 +85,15 @@ cd my-app
 
 ALLOWED_ORIGINS=\*
 
-# Optional: Model file path (defaults to yolo11s.pt in current directory)
+   # Optional: Model file path (defaults to my_model.pt in current directory)
 
-# MODEL_PATH=yolo11s.pt
+   # MODEL_PATH=my_model.pt
 
 ````
 
-6. **Verify the YOLOv11 model file:**
+6. **Verify the model file:**
 
-   Make sure `yolo11s.pt` is in the `backend` directory. If it's in a different location, set the `MODEL_PATH` variable in your `.env` file.
+   Make sure `my_model.pt` is in the `backend` directory. If it's in a different location, set the `MODEL_PATH` variable in your `.env` file.
 
 7. **Start the backend server:**
    ```bash
@@ -222,7 +222,7 @@ my-app/
 │   ├── model.py            # YOLO model integration
 │   ├── requirements.txt    # Python dependencies
 │   ├── venv/               # Python virtual environment (gitignored)
-│   └── yolo11s.pt          # YOLO model file
+│   └── my_model.pt         # Custom YOLO model file
 ├── public/                 # Static assets
 ├── package.json            # Node.js dependencies
 ├── next.config.mjs         # Next.js configuration
@@ -251,7 +251,7 @@ my-app/
 
 **Problem: Model file not found**
 
-- Solution: Ensure `yolo11s.pt` is in the `backend` directory, or set `MODEL_PATH` in your `.env` file.
+- Solution: Ensure `my_model.pt` is in the `backend` directory, or set `MODEL_PATH` in your `.env` file.
 
 **Problem: Port 8000 already in use**
 
@@ -293,7 +293,7 @@ my-app/
 | ----------------- | -------- | ------------ | -------------------------------------------- |
 | `GEMINI_API_KEY`  | Yes      | -            | Your Google Gemini API key                   |
 | `ALLOWED_ORIGINS` | No       | `*`          | Comma-separated list of allowed CORS origins |
-| `MODEL_PATH`      | No       | `yolo11s.pt` | Path to the YOLO model file                  |
+| `MODEL_PATH`      | No       | `my_model.pt` | Path to the YOLO model file                  |
 
 ### Frontend (`.env.local` in project root)
 
@@ -319,7 +319,7 @@ See http://localhost:8000/docs for interactive API documentation.
 - **Backend:**
   - FastAPI
   - Python 3.9+
-  - YOLOv11 (Ultralytics)
+  - Custom YOLO model (Ultralytics)
   - Google Gemini API
   - Pillow (PIL)
 

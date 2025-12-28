@@ -71,7 +71,7 @@ vercel --prod
 | CORS error | Check `ALLOWED_ORIGINS` includes frontend URL |
 | 404 on API calls | Verify `NEXT_PUBLIC_API_BASE_URL` is correct |
 | Backend won't start | Check logs, verify env vars are set |
-| Model not found | Ensure `yolo11s.pt` is in backend directory |
+| Model not found | Ensure `my_model.pt` is in backend directory |
 
 For detailed troubleshooting, see [DEPLOYMENT.md](./DEPLOYMENT.md#troubleshooting).
 

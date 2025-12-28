@@ -13,13 +13,13 @@ from .ingredient_normalizer import normalize_ingredients_batch
 @lru_cache(maxsize=1)
 def get_model() -> YOLO:
     """
-    Lazily load the YOLOv11s model.
+    Lazily load the custom YOLO model for ingredient detection.
     """
-    model_path = os.environ.get("MODEL_PATH", "yolo11s.pt")
+    model_path = os.environ.get("MODEL_PATH", "my_model.pt")
     if not os.path.exists(model_path):
         raise FileNotFoundError(
             f"Model file not found at {model_path}. "
-            f"Please set MODEL_PATH environment variable or place yolo11s.pt in the backend directory."
+            f"Please set MODEL_PATH environment variable or place my_model.pt in the backend directory."
         )
     return YOLO(model_path)
 

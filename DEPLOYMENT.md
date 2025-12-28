@@ -26,7 +26,7 @@ Before deploying, ensure you have:
 - ✅ A GitHub account
 - ✅ A Vercel account ([Sign up here](https://vercel.com/signup))
 - ✅ A Gemini API key ([Get one here](https://ai.google.dev/))
-- ✅ The YOLOv11 model file (`yolo11s.pt`)
+- ✅ The custom YOLO model file (`my_model.pt`)
 - ✅ Git installed on your local machine
 
 > ⚠️ **Security Note**: Never commit your `.env` files or API keys to GitHub. Always use environment variables in your hosting platform's dashboard. Make sure `.env` and `.env.local` are in your `.gitignore` file.
@@ -134,7 +134,7 @@ Before deploying, ensure you have:
 
 ## Deploying Backend
 
-Since the backend includes a large ML model (YOLOv11), we'll deploy it on a platform that supports Python applications with larger file sizes.
+Since the backend includes a large ML model (custom YOLO), we'll deploy it on a platform that supports Python applications with larger file sizes.
 
 ### Option 1: Railway (Recommended)
 
@@ -186,7 +186,7 @@ Railway is excellent for Python applications and handles large files well.
    ```
 
 5. **Upload Model File**:
-   - Option A: Commit `yolo11s.pt` to your repository (if it's not too large)
+   - Option A: Commit `my_model.pt` to your repository (if it's not too large)
    - Option B: Use Railway's volume feature to upload the file
    - Option C: Download the model on first startup (modify `model.py` to download if not found)
 
@@ -422,11 +422,11 @@ After deploying both services:
   1. Check logs in your hosting platform
   2. Verify all environment variables are set
   3. Ensure `requirements.txt` is correct
-  4. Check that model file (`yolo11s.pt`) is accessible
+  4. Check that model file (`my_model.pt`) is accessible
 
 **Problem: Model file not found**
 - **Solution**:
-  1. Ensure `yolo11s.pt` is committed to repository (if small enough)
+  1. Ensure `my_model.pt` is committed to repository (if small enough)
   2. Or use a volume/storage service to host the model
   3. Or modify code to download model on first startup
 
