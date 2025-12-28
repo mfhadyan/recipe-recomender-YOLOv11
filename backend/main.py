@@ -110,9 +110,6 @@ async def recommend_recipes(
                 scale = min(max_dimension / float(w), max_dimension / float(h))
                 new_w, new_h = int(w * scale), int(h * scale)
                 img = img.resize((new_w, new_h), Image.Resampling.LANCZOS)
-                logger.info(f"Image resized from {w}x{h} to {new_w}x{new_h}")
-            else:
-                logger.info(f"Image processed: {img.size}")
         except UnidentifiedImageError as exc:
             raise HTTPException(
                 status_code=400,
@@ -125,13 +122,11 @@ async def recommend_recipes(
             ) from exc
 
         # Run YOLO detection
+        detected_ingredients = []
         try:
             detected_ingredients = detect_ingredients(img)
-            logger.info(f"Detected ingredients from image: {detected_ingredients}")
-            if not detected_ingredients:
-                logger.info("YOLO detection completed but no ingredients were detected in the image.")
         except FileNotFoundError as exc:
-            logger.error(f"Model file not found: {exc}")
+            logger.error(f"Model file not found: {exc}", exc_info=True)
             # Continue with manual ingredients if available
             detected_ingredients = []
         except RuntimeError as exc:
@@ -139,7 +134,7 @@ async def recommend_recipes(
             if "cuda" in error_msg or "gpu" in error_msg:
                 logger.warning(f"GPU/CUDA error during detection (falling back to CPU or manual input): {exc}")
             else:
-                logger.error(f"Runtime error during ingredient detection: {exc}")
+                logger.error(f"Runtime error during ingredient detection: {exc}", exc_info=True)
             # Continue with manual ingredients if available
             detected_ingredients = []
         except Exception as exc:  # noqa: BLE001
@@ -150,22 +145,18 @@ async def recommend_recipes(
     # 2) Parse & normalize user-typed ingredients
     user_ingredients: List[str] = []
     if extra_ingredients:
-        logger.info(f"Received extra_ingredients: {extra_ingredients}")
         for token in extra_ingredients.split(","):
             name = token.strip()
             if name:
                 # Validate ingredient name
                 if len(name) < 2:
-                    logger.warning(f"Ingredient '{name}' too short, skipping")
                     continue
                 if len(name) > 50:
-                    logger.warning(f"Ingredient '{name}' too long, truncating")
                     name = name[:50]
                 # Sanitize: allow letters, numbers, spaces, hyphens, apostrophes
                 name = re.sub(r"[^a-zA-Z0-9\s\-']", "", name)
                 if name and name.strip():
                     user_ingredients.append(name.strip())
-        logger.info(f"Parsed user ingredients: {user_ingredients}")
 
     # If nothing at all, ask user to add something
     if not detected_ingredients and not user_ingredients:
@@ -209,21 +200,16 @@ async def recommend_recipes(
             seen.add(key)
             merged.append(ing)
     
-    logger.info(f"Detected from image: {detected_ingredients}")
-    logger.info(f"Manually added: {user_ingredients}")
-    logger.info(f"Merged ingredients (total: {len(merged)}): {merged}")
 
     # 4) Parse dietary preferences
     dietary_list: List[str] = []
     if dietary_preferences:
         dietary_list = [p.strip() for p in dietary_preferences.split(",") if p.strip()]
-        logger.info(f"Dietary preferences: {dietary_list}")
     
     # 5) Query Gemini to generate recipe ideas based on ingredients
     try:
         client = GeminiClient()
         raw_recipes = client.generate_recipes(merged, dietary_preferences=dietary_list)
-        logger.info(f"Generated {len(raw_recipes)} recipes")
     except RuntimeError as exc:
         error_msg = str(exc).lower()
         if "timeout" in error_msg or "timed out" in error_msg:

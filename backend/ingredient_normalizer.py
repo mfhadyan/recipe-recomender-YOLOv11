@@ -57,7 +57,6 @@ COMMON_INGREDIENT_MAPPING: Dict[str, str] = {
     "eggs": "egg",
     "chicken": "chicken",
     "beef": "beef",
-    "pork": "pork",
     "fish": "fish",
     "rice": "rice",
     "noodle": "noodles",
@@ -105,14 +104,12 @@ def normalize_ingredient(raw_name: str, use_ai: Optional[bool] = None) -> str:
     for key in key_variations:
         if key in COMMON_INGREDIENT_MAPPING:
             normalized = COMMON_INGREDIENT_MAPPING[key]
-            logger.debug(f"Dictionary mapping: {raw_name} -> {normalized}")
             return normalized
     
     # Step 2: Check AI cache
     cache_key = raw_lower
     if cache_key in _ai_cache:
         normalized = _ai_cache[cache_key]
-        logger.debug(f"AI cache hit: {raw_name} -> {normalized}")
         return normalized
     
     # Step 3: Use AI normalization if enabled
@@ -122,7 +119,6 @@ def normalize_ingredient(raw_name: str, use_ai: Optional[bool] = None) -> str:
             if normalized:
                 # Cache the result
                 _ai_cache[cache_key] = normalized
-                logger.info(f"AI normalized: {raw_name} -> {normalized}")
                 return normalized
         except Exception as e:
             logger.warning(f"AI normalization failed for '{raw_name}': {e}")
@@ -130,7 +126,6 @@ def normalize_ingredient(raw_name: str, use_ai: Optional[bool] = None) -> str:
     
     # Step 4: Fallback to cleaned raw name
     normalized = raw_lower
-    logger.info(f"Using fallback normalization: {raw_name} -> {normalized}")
     return normalized
 
 

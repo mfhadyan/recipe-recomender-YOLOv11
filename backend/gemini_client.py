@@ -159,7 +159,6 @@ class GeminiClient:
         if cache_key in _recipe_cache:
             cached_recipes, cache_time = _recipe_cache[cache_key]
             if current_time - cache_time < _cache_ttl:
-                logger.info(f"Returning cached recipes for {len(ingredients)} ingredients")
                 return cached_recipes
             else:
                 # Cache expired, remove it

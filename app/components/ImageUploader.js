@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Image from "next/image";
+import NextImage from "next/image";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_TYPES = [
@@ -70,7 +70,7 @@ export default function ImageUploader({ file, onFileChange, error, setError }) {
     return new Promise((resolve) => {
       const reader = new FileReader();
       reader.onload = (e) => {
-        const img = new Image();
+        const img = new window.Image();
         img.onload = () => {
           const canvas = document.createElement("canvas");
           let width = img.width;
@@ -167,7 +167,7 @@ export default function ImageUploader({ file, onFileChange, error, setError }) {
       </div>
       {previewUrl && (
         <div className="relative mt-3 h-64 w-full overflow-hidden rounded-2xl border border-slate-700/70 bg-slate-900/70">
-          <Image
+          <NextImage
             src={previewUrl}
             alt="Ingredient preview"
             fill
