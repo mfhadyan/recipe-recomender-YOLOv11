@@ -15,6 +15,14 @@ build/
 .env.local
 *.log
 .DS_Store
-*.pt
-!yolo11s.pt
+# Exclude model files that aren't needed (keep only my_model.pt)
+yolo11s.pt
+# Exclude deployment configs
+fly.toml
+railway.json
+nixpacks.toml
+Procfile
+# Exclude test files
+test_images/
+*.md
 
