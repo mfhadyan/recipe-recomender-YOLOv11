@@ -7,7 +7,7 @@ import logging
 import os
 from typing import Dict, List, Optional
 
-from .gemini_client import GeminiClient
+from gemini_client import GeminiClient
 
 logger = logging.getLogger(__name__)
 

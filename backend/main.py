@@ -12,8 +12,8 @@ from fastapi.responses import JSONResponse  # type: ignore[import]
 from PIL import Image
 from PIL import UnidentifiedImageError
 
-from .gemini_client import GeminiClient
-from .model import detect_ingredients
+from gemini_client import GeminiClient
+from model import detect_ingredients
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)

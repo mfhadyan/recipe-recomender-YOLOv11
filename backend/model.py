@@ -6,7 +6,7 @@ from typing import List
 from PIL import Image
 from ultralytics import YOLO
 
-from .ingredient_normalizer import normalize_ingredients_batch
+from ingredient_normalizer import normalize_ingredients_batch
 
 logger = logging.getLogger(__name__)
 
