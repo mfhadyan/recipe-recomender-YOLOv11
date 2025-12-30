@@ -1,7 +1,6 @@
 "use client";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+import { Plus, X } from "lucide-react";
 
 export default function IngredientInput({
   ingredientInput,
@@ -17,15 +16,23 @@ export default function IngredientInput({
       return { valid: false, error: "Ingredient name cannot be empty." };
     }
     if (trimmed.length < 2) {
-      return { valid: false, error: "Ingredient name must be at least 2 characters." };
+      return {
+        valid: false,
+        error: "Ingredient name must be at least 2 characters.",
+      };
     }
     if (trimmed.length > 50) {
-      return { valid: false, error: "Ingredient name must be 50 characters or less." };
+      return {
+        valid: false,
+        error: "Ingredient name must be 50 characters or less.",
+      };
     }
-    // Allow letters, numbers, spaces, hyphens, and apostrophes
     const validPattern = /^[a-zA-Z0-9\s\-']+$/;
     if (!validPattern.test(trimmed)) {
-      return { valid: false, error: "Ingredient name contains invalid characters. Use only letters, numbers, spaces, hyphens, and apostrophes." };
+      return {
+        valid: false,
+        error: "Ingredient name contains invalid characters.",
+      };
     }
     return { valid: true, error: null };
   };
@@ -34,7 +41,6 @@ export default function IngredientInput({
     const raw = ingredientInput.trim();
     if (!raw) return;
 
-    // Parse comma-separated ingredients
     const ingredients = raw
       .split(",")
       .map((ing) => ing.trim())
@@ -45,7 +51,6 @@ export default function IngredientInput({
       return;
     }
 
-    // Validate all ingredients
     const invalidIngredients = [];
     const validIngredients = [];
 
@@ -60,9 +65,10 @@ export default function IngredientInput({
 
     if (invalidIngredients.length > 0) {
       setError(
-        `Invalid ingredients: ${invalidIngredients.join(", ")}. ${invalidIngredients.length === 1 ? "It" : "They"} contain invalid characters or are too short/long.`
+        `Invalid ingredients: ${invalidIngredients.join(", ")}. ${
+          invalidIngredients.length === 1 ? "It" : "They"
+        } contain invalid characters or are too short/long.`
       );
-      // Still add valid ingredients if any
       if (validIngredients.length === 0) {
         return;
       }
@@ -70,7 +76,6 @@ export default function IngredientInput({
       setError("");
     }
 
-    // Add valid ingredients (avoid duplicates)
     setExtraIngredients((prev) => {
       const existingLower = new Set(prev.map((ing) => ing.toLowerCase()));
       const newIngredients = validIngredients.filter(
@@ -85,7 +90,9 @@ export default function IngredientInput({
       if (newIngredients.length < validIngredients.length) {
         const skipped = validIngredients.length - newIngredients.length;
         setError(
-          `${skipped} ingredient${skipped === 1 ? " was" : "s were"} already added.`
+          `${skipped} ingredient${
+            skipped === 1 ? " was" : "s were"
+          } already added.`
         );
       }
 
@@ -116,45 +123,49 @@ export default function IngredientInput({
 
   return (
     <div className="space-y-3">
-      <label className="text-sm font-medium text-slate-200">
-        Add ingredients manually (comma-separated)
+      <label className="block text-sm font-medium text-purple-900">
+        <span className="flex items-center gap-2">
+          <Plus className="w-4 h-4" />
+          Add More Ingredients
+        </span>
       </label>
-      <div className="flex flex-col gap-2 sm:flex-row">
+      <div className="flex gap-2">
         <input
           type="text"
-          placeholder="e.g. garlic, tomato, pepper, egg, onion"
           value={ingredientInput}
           onChange={(e) => setIngredientInput(e.target.value)}
           onKeyPress={handleKeyPress}
-          className="flex-1 rounded-xl border border-slate-700 bg-slate-900/60 px-3 py-2 text-sm text-slate-50 outline-none ring-sky-500/0 placeholder:text-slate-500 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/40"
-          aria-label="Ingredient names input (comma-separated)"
+          placeholder="e.g., tomatoes, cheese, pasta..."
+          className="flex-1 rounded-xl border-2 border-purple-200 bg-white px-4 py-2.5 text-sm text-purple-900 placeholder:text-purple-400 focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-200"
         />
         <button
           type="button"
           onClick={handleAddIngredients}
-          className="inline-flex items-center justify-center rounded-xl bg-sky-500 px-4 py-2 text-sm font-semibold text-slate-950 shadow-lg shadow-sky-500/30 transition hover:bg-sky-400 disabled:opacity-50"
           disabled={!ingredientInput.trim()}
+          className="rounded-xl bg-purple-500 px-4 py-2.5 text-white hover:bg-purple-600 transition disabled:opacity-50"
         >
-          Add ingredients
+          <Plus className="w-5 h-5" />
         </button>
       </div>
       {extraIngredients.length > 0 && (
-        <div className="flex flex-wrap gap-2" role="list" aria-label="Added ingredients">
+        <div className="flex flex-wrap gap-2">
           {extraIngredients.map((ing) => (
-            <button
+            <span
               key={ing}
-              type="button"
-              onClick={() => handleRemoveIngredient(ing)}
-              className="group inline-flex items-center gap-1 rounded-full bg-slate-800/80 px-3 py-1 text-xs text-slate-100 ring-1 ring-slate-600/70 hover:bg-red-500/90 hover:text-white hover:ring-red-400"
-              aria-label={`Remove ${ing}`}
+              className="inline-flex items-center gap-1.5 rounded-full bg-purple-100 px-3 py-1.5 text-xs font-medium text-purple-900"
             >
-              <span>{ing}</span>
-              <span className="text-slate-300 group-hover:text-white">×</span>
-            </button>
+              {ing}
+              <button
+                type="button"
+                onClick={() => handleRemoveIngredient(ing)}
+                className="hover:text-purple-700"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </span>
           ))}
         </div>
       )}
     </div>
   );
 }
-

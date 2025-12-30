@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import NextImage from "next/image";
+import { Upload, ChefHat } from "lucide-react";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_TYPES = [
@@ -27,7 +28,6 @@ export default function ImageUploader({ file, onFileChange, error, setError }) {
   const validateFile = (f) => {
     setValidationError("");
 
-    // Check file type
     if (!f.type || !f.type.startsWith("image/")) {
       setValidationError(
         "Please select an image file (JPG, PNG, WebP, or GIF)."
@@ -37,7 +37,6 @@ export default function ImageUploader({ file, onFileChange, error, setError }) {
       return false;
     }
 
-    // Check if type is in allowed list
     if (!ALLOWED_TYPES.includes(f.type.toLowerCase())) {
       setValidationError(
         `File type "${f.type}" is not supported. Please use JPG, PNG, WebP, or GIF.`
@@ -49,7 +48,6 @@ export default function ImageUploader({ file, onFileChange, error, setError }) {
       return false;
     }
 
-    // Check file size
     if (f.size > MAX_FILE_SIZE) {
       const sizeMB = (f.size / (1024 * 1024)).toFixed(2);
       const maxMB = (MAX_FILE_SIZE / (1024 * 1024)).toFixed(0);
@@ -66,7 +64,12 @@ export default function ImageUploader({ file, onFileChange, error, setError }) {
     return true;
   };
 
-  const compressImage = (file, maxWidth = 1920, maxHeight = 1920, quality = 0.85) => {
+  const compressImage = (
+    file,
+    maxWidth = 1920,
+    maxHeight = 1920,
+    quality = 0.85
+  ) => {
     return new Promise((resolve) => {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -76,7 +79,6 @@ export default function ImageUploader({ file, onFileChange, error, setError }) {
           let width = img.width;
           let height = img.height;
 
-          // Calculate new dimensions
           if (width > maxWidth || height > maxHeight) {
             const ratio = Math.min(maxWidth / width, maxHeight / height);
             width = width * ratio;
@@ -98,17 +100,17 @@ export default function ImageUploader({ file, onFileChange, error, setError }) {
                 });
                 resolve(compressedFile);
               } else {
-                resolve(file); // Fallback to original if compression fails
+                resolve(file);
               }
             },
             file.type,
             quality
           );
         };
-        img.onerror = () => resolve(file); // Fallback to original on error
+        img.onerror = () => resolve(file);
         img.src = e.target.result;
       };
-      reader.onerror = () => resolve(file); // Fallback to original on error
+      reader.onerror = () => resolve(file);
       reader.readAsDataURL(file);
     });
   };
@@ -117,7 +119,6 @@ export default function ImageUploader({ file, onFileChange, error, setError }) {
     const f = e.target.files?.[0];
     if (f) {
       if (validateFile(f)) {
-        // Compress image before upload to reduce size and API costs
         const compressedFile = await compressImage(f);
         const url = URL.createObjectURL(compressedFile);
         setPreviewUrl(url);
@@ -136,37 +137,47 @@ export default function ImageUploader({ file, onFileChange, error, setError }) {
   };
 
   return (
-    <div className="space-y-2">
-      <label className="text-sm font-medium text-slate-200">
-        Ingredient photo
+    <div className="space-y-3">
+      <label className="block text-sm font-medium text-rose-900">
+        <span className="flex items-center gap-2">
+          <Upload className="w-4 h-4" />
+          Upload Ingredient Photo
+        </span>
       </label>
-      <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+      <div className="relative">
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          className="hidden"
+          id="file-upload"
+        />
         <label
-          className="inline-flex cursor-pointer items-center justify-center rounded-xl border border-dashed border-slate-600 bg-slate-900/60 px-4 py-3 text-sm font-medium text-slate-200 shadow-inner hover:border-sky-500 hover:bg-slate-900"
-          aria-label="Choose ingredient image"
+          htmlFor="file-upload"
+          className="flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-rose-300 bg-rose-50 px-6 py-10 text-center transition hover:border-rose-400 hover:bg-rose-100"
         >
-          <span>Choose image</span>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleFileChange}
-            className="hidden"
-            aria-describedby="image-upload-help"
-          />
+          {file ? (
+            <div className="space-y-2">
+              <ChefHat className="mx-auto h-10 w-10 text-rose-500" />
+              <p className="text-sm font-medium text-rose-900">{file.name}</p>
+              <p className="text-xs text-rose-600">Click to change image</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <Upload className="mx-auto h-10 w-10 text-rose-400" />
+              <p className="text-sm font-medium text-rose-900">
+                Drop your image here
+              </p>
+              <p className="text-xs text-rose-600">
+                or click to browse • PNG, JPG, WebP, GIF up to 10MB
+              </p>
+            </div>
+          )}
         </label>
-        {file ? (
-          <p className="text-xs text-slate-300">
-            Selected:{" "}
-            <span className="font-medium text-slate-100">{file.name}</span>
-          </p>
-        ) : (
-          <p id="image-upload-help" className="text-xs text-slate-400">
-            PNG, JPG, WebP, GIF up to 10MB. Processed only in-memory.
-          </p>
-        )}
       </div>
+
       {previewUrl && (
-        <div className="relative mt-3 h-64 w-full overflow-hidden rounded-2xl border border-slate-700/70 bg-slate-900/70">
+        <div className="relative mt-3 h-64 w-full overflow-hidden rounded-2xl border-2 border-rose-200 bg-white">
           <NextImage
             src={previewUrl}
             alt="Ingredient preview"
@@ -175,14 +186,10 @@ export default function ImageUploader({ file, onFileChange, error, setError }) {
           />
         </div>
       )}
+
       {validationError && (
-        <p className="rounded-lg border border-red-500/70 bg-red-500/10 px-3 py-2 text-xs text-red-200">
+        <p className="rounded-xl border-2 border-rose-300 bg-rose-50 px-4 py-3 text-sm text-rose-900">
           {validationError}
-        </p>
-      )}
-      {error && !validationError && (
-        <p className="rounded-lg border border-red-500/70 bg-red-500/10 px-3 py-2 text-xs text-red-200">
-          {error}
         </p>
       )}
     </div>

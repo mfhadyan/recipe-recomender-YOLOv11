@@ -2,23 +2,20 @@
 
 export default function RecipeCardSkeleton() {
   return (
-    <article className="flex gap-3 rounded-2xl border border-slate-800 bg-slate-900/70 p-3 shadow-sm animate-pulse">
-      <div className="flex flex-1 flex-col gap-1">
-        <div className="flex items-start justify-between gap-3">
-          <div className="h-4 bg-slate-700 rounded w-3/4"></div>
-          <div className="h-5 bg-slate-700 rounded-full w-16"></div>
-        </div>
-        <div className="h-3 bg-slate-700 rounded w-2/3"></div>
-        <div className="mt-1 flex flex-wrap gap-1">
-          <div className="h-5 bg-slate-700 rounded-full w-16"></div>
-          <div className="h-5 bg-slate-700 rounded-full w-20"></div>
-          <div className="h-5 bg-slate-700 rounded-full w-14"></div>
-          <div className="h-5 bg-slate-700 rounded-full w-18"></div>
-        </div>
-        <div className="mt-1 h-3 bg-slate-700 rounded w-full"></div>
-        <div className="mt-2 h-3 bg-slate-700 rounded w-32"></div>
+    <div className="rounded-2xl bg-white p-5 shadow-sm border-2 border-amber-100 animate-pulse">
+      <div className="flex items-start justify-between mb-3">
+        <div className="h-5 bg-amber-200 rounded w-2/3"></div>
+        <div className="w-5 h-5 bg-rose-200 rounded-full"></div>
       </div>
-    </article>
+      <div className="space-y-2 mb-4">
+        <div className="h-3 bg-slate-200 rounded w-full"></div>
+        <div className="h-3 bg-slate-200 rounded w-4/5"></div>
+      </div>
+      <div className="flex items-center gap-4">
+        <div className="h-3 bg-emerald-200 rounded w-16"></div>
+        <div className="h-3 bg-rose-200 rounded w-16"></div>
+        <div className="h-3 bg-amber-200 rounded w-12 ml-auto"></div>
+      </div>
+    </div>
   );
 }
-
