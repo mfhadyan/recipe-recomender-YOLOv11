@@ -12,7 +12,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Yummy Recipe Finder - AI Recipe Recommender",
+  title: "BearyGood - AI Recipe Recommender",
   description:
     "Upload a photo of your ingredients or add them manually, and get AI-powered recipe suggestions that use what you have available. Discover delicious recipes with what's in your kitchen!",
 };
