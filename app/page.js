@@ -159,7 +159,7 @@ export default function Home() {
           <div className="flex items-center justify-center gap-3 mb-3">
             <UtensilsCrossed className="w-8 h-8 text-white" />
             <h1 className="text-4xl font-bold text-white">
-              Yummy Recipe Recommender
+              BearyGood
             </h1>
             <Sparkles className="w-8 h-8 text-white" />
           </div>
